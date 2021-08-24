@@ -1,0 +1,57 @@
+version: "3.3"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    command: bash -c "python manage.py createdb && python manage.py createsuperuser
+                      && python manage.py run -h 0.0.0.0 -p 8000"
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+      - db
+
+  db:
+    image: postgres:12-alpine
+    networks:
+      - default
+    restart: always
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+
+  redis:
+    image: 'redis:4.0.1-alpine'
+    restart: always
+    volumes:
+      - redis:/data
+#    ports:
+#      - "6379:6379"
+
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "celery -A users_project.celery worker --loglevel=INFO"
+    user: nobody
+    links:
+      - redis
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
+volumes:
+  postgres_data:
+  redis:
