@@ -1,6 +1,8 @@
 from datetime import datetime
-from users_project import app
+
 from flask_sqlalchemy import SQLAlchemy
+
+from users_project import app
 
 db = SQLAlchemy(app)
 
@@ -21,7 +23,7 @@ class User(db.Model):
 
     @staticmethod
     def create_user(email: str, first_name: str, last_name: str, created_at=None, updated_at=None,
-                    is_superuser=None) -> object:
+                    is_superuser=False) -> 'User':
         new_user = User(email=email, first_name=first_name, last_name=last_name, created_at=created_at,
                         updated_at=updated_at, is_superuser=is_superuser)
 
@@ -31,12 +33,11 @@ class User(db.Model):
         return new_user
 
     @staticmethod
-    def update_user(user: object, email: str, first_name: str, last_name: str, created_at=None,
-                    is_superuser=None) -> object:
+    def update_user(user: 'User', email: str, first_name: str, last_name: str,
+                    is_superuser=False) -> 'User':
         user.email = email
         user.first_name = first_name
         user.last_name = last_name
-        user.created_at = created_at
         user.updated_at = datetime.utcnow()
         user.is_superuser = is_superuser
 
@@ -45,20 +46,13 @@ class User(db.Model):
         return user
 
     @staticmethod
-    def remove_user(user_id: int) -> classmethod:
-        deleted_user = User.query.filter_by(id=user_id).delete()
-        db.session.commit()
-
-        return deleted_user
-
-    @staticmethod
-    def get_all_users() -> object:
+    def get_all_users():
         return User.query.order_by(User.first_name).order_by(User.id.desc()).all()
 
     @staticmethod
-    def get_user_by_id(_id: int):
-        return User.query.filter_by(id=_id).first_or_404()
+    def get_user_by_id(_id: int) -> 'User' or None:
+        return User.query.filter_by(id=_id).first() or None
 
     @staticmethod
-    def get_user_by_email(email: str):
-        return User.query.filter_by(email=email).first_or_404()
+    def get_user_by_email(email: str) -> 'User' or None:
+        return User.query.filter_by(email=email).first() or None

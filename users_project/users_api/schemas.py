@@ -1,17 +1,19 @@
-from users_project import app
-from flask_marshmallow import Marshmallow
-from .models import User
-
-ma = Marshmallow(app)
+from datetime import datetime
+from marshmallow import Schema, fields
+from marshmallow.validate import Length
 
 
-class UserSchema(ma.SQLAlchemyAutoSchema):
+class UserSchema(Schema):
+
+    email = fields.Email(required=True, validate=Length(max=140))
+    first_name = fields.String(required=True, validate=Length(min=2, max=100))
+    last_name = fields.String(validate=Length(min=2, max=100))
+    created_at = fields.DateTime(dump_only=True, default=datetime.utcnow())
+    updated_at = fields.DateTime(dump_only=True, default=datetime.utcnow())
+    is_superuser = fields.Boolean(default=False)
+
     class Meta:
-        model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'created_at', 'updated_at', 'is_superuser')
-        load_instance = True
-
-    created_at = ma.auto_field(dump_only=True)
-    updated_at = ma.auto_field(dump_only=True)
+        fields = ("id", "email", "first_name", "last_name", "created_at", "updated_at", "is_superuser")
+        ordered = True
 
 
