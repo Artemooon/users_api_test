@@ -1,6 +1,7 @@
-from users_project import celery
-from users_project import app
 from flask_mail import Mail, Message
+
+from users_project import app
+from users_project import celery
 from users_project.users_api.models import User
 
 mail = Mail(app)
